@@ -24,7 +24,7 @@ function App() {
     e.preventDefault();
     if (selectedNotes?.notesid) {
       const updatedNotes = allNotes.map(note =>
-        note.id === selectedNotes.id ? { ...selectedNotes } : note
+        note.notesid === selectedNotes.notesid ? { ...selectedNotes } : note
       );
 
       localStorage.setItem('notes', JSON.stringify(updatedNotes));
