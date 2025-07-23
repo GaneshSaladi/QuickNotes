@@ -1,7 +1,62 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import NotesGrid from './Components/NotesGrid';
+import FormGrid from './Components/FormGrid';
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
+  // state variables
+  const [notes, setNotes] = useState([]);
+  const allNotes = localStorage.getItem('notes') ? JSON.parse(localStorage.getItem('notes')) : [];
+  const [selectedNotes, setSelectedNotes] = useState({});
+
+  // used to get and update notes while onloading
+  useEffect(() => {
+    const storedNotes = localStorage.getItem('notes');
+    if (storedNotes) {
+      setNotes(JSON.parse(storedNotes));
+    }
+  }, []);
+
+
+  // function to save or update note 
+  const handleSaveNote = (e) => {
+    e.preventDefault();
+    if (selectedNotes?.notesid) {
+      const updatedNotes = allNotes.map(note =>
+        note.id === selectedNotes.id ? { ...selectedNotes } : note
+      );
+
+      localStorage.setItem('notes', JSON.stringify(updatedNotes));
+      setNotes(updatedNotes);
+    } else {
+      let notesEntered = {
+        ...selectedNotes, notesid: uuidv4(), createdon: new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short', // or 'long' for full month name
+          day: '2-digit',
+        }),
+      }
+      const updatedNotes = [...allNotes, notesEntered];
+      localStorage.setItem('notes', JSON.stringify(updatedNotes));
+      setNotes(updatedNotes);
+    }
+    setSelectedNotes({ title: '', notes: '' });
+
+  };
+
+  // setData on edit
+  const onEdit = (notesData) => {
+    setSelectedNotes(notesData)
+  };
+
+  // function to handle Edit
+  const handleDelete = (notesData) => {
+    const updatedNotes = notes.filter(note => note.notesid !== notesData?.notesid);
+    localStorage.setItem('notes', JSON.stringify(updatedNotes));
+    setNotes(updatedNotes);
+    setSelectedNotes({ title: '', notes: '' });
+  }
 
 
   return (
@@ -51,164 +106,18 @@ function App() {
       </header>
       <main className="main-content container">
         <div className="main-grid">
-          <div className="note-form-panel">
-            <div className="note-form-panel-sticky">
-              <div className="note-form-container">
-                <h2 className="note-form-title">Create a New Note</h2>
-                <form className="note-form">
-                  <div>
-                    <label className="sr-only" htmlFor="title">
-                      Title
-                    </label>
-                    <input
-                      className="note-input"
-                      id="title"
-                      placeholder="Note Title"
-                      type="text"
-                    />
-                  </div>
-                  <div>
-                    <label className="sr-only" htmlFor="content">
-                      Content
-                    </label>
-                    <textarea
-                      className="note-input note-textarea"
-                      id="content"
-                      placeholder="Start writing your note..."
-                      rows={8}
-                      defaultValue={""}
-                    />
-                  </div>
-                  <button className="save-button" type="submit">
-                    Save Note
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
+          <FormGrid handleSaveNote={handleSaveNote} selectedNotes={selectedNotes} setSelectedNotes={setSelectedNotes} />
           <div className="notes-grid-container">
             <div className="notes-grid">
-              <div className="note-card">
-                <div>
-                  <h3 className="note-card-title">Project Brainstorm</h3>
-                  <p className="note-card-content">
-                    Initial ideas for the new design system, including component
-                    libraries, color palettes, and typography guidelines...
-                  </p>
-                </div>
-                <div className="note-card-footer">
-                  <span className="note-card-date">May 20, 2024</span>
-                  <div className="note-card-actions">
-                    <button className="action-button">
-                      <span className="material-icons">edit</span>
-                    </button>
-                    <button className="action-button">
-                      <span className="material-icons">delete</span>
-                    </button>
+              {notes?.map((note, index) => {
+                return (
+                  <div key={index}>
+                   <NotesGrid notesData={note} index={index} onEdit={onEdit} handleDelete={handleDelete} />
                   </div>
-                </div>
-              </div>
-              <div className="note-card">
-                <div>
-                  <h3 className="note-card-title">Meeting Notes</h3>
-                  <p className="note-card-content">
-                    Q2 planning session recap. Key takeaways: focus on user
-                    retention, launch marketing campaign by July, hire two new
-                    engineers.
-                  </p>
-                </div>
-                <div className="note-card-footer">
-                  <span className="note-card-date">May 18, 2024</span>
-                  <div className="note-card-actions">
-                    <button className="action-button">
-                      <span className="material-icons">edit</span>
-                    </button>
-                    <button className="action-button">
-                      <span className="material-icons">delete</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="note-card">
-                <div>
-                  <h3 className="note-card-title">Grocery List</h3>
-                  <p className="note-card-content">
-                    Milk, eggs, bread, chicken breast, avocados, spinach, bell
-                    peppers, onions, garlic, olive oil.
-                  </p>
-                </div>
-                <div className="note-card-footer">
-                  <span className="note-card-date">May 17, 2024</span>
-                  <div className="note-card-actions">
-                    <button className="action-button">
-                      <span className="material-icons">edit</span>
-                    </button>
-                    <button className="action-button">
-                      <span className="material-icons">delete</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="note-card">
-                <div>
-                  <h3 className="note-card-title">Travel Plans</h3>
-                  <p className="note-card-content">
-                    Flight confirmation: UA456 to Tokyo on June 15th. Hotel: Grand
-                    Hyatt Tokyo. Remember to pack the camera and portable charger.
-                  </p>
-                </div>
-                <div className="note-card-footer">
-                  <span className="note-card-date">May 15, 2024</span>
-                  <div className="note-card-actions">
-                    <button className="action-button">
-                      <span className="material-icons">edit</span>
-                    </button>
-                    <button className="action-button">
-                      <span className="material-icons">delete</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="note-card">
-                <div>
-                  <h3 className="note-card-title">Book Recommendations</h3>
-                  <p className="note-card-content">
-                    "Project Hail Mary" by Andy Weir, "Klara and the Sun" by Kazuo
-                    Ishiguro, "The Midnight Library" by Matt Haig.
-                  </p>
-                </div>
-                <div className="note-card-footer">
-                  <span className="note-card-date">May 12, 2024</span>
-                  <div className="note-card-actions">
-                    <button className="action-button">
-                      <span className="material-icons">edit</span>
-                    </button>
-                    <button className="action-button">
-                      <span className="material-icons">delete</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="note-card">
-                <div>
-                  <h3 className="note-card-title">Personal Goals</h3>
-                  <p className="note-card-content">
-                    1. Read 20 books this year. 2. Exercise 3 times a week. 3. Learn
-                    to play the guitar. 4. Save for a down payment.
-                  </p>
-                </div>
-                <div className="note-card-footer">
-                  <span className="note-card-date">May 10, 2024</span>
-                  <div className="note-card-actions">
-                    <button className="action-button">
-                      <span className="material-icons">edit</span>
-                    </button>
-                    <button className="action-button">
-                      <span className="material-icons">delete</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+                 
+                )
+              })}
+
             </div>
           </div>
         </div>
