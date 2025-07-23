@@ -1,7 +1,17 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const FormGrid = (props) => {
     const { handleSaveNote, selectedNotes, setSelectedNotes } = props;
+    const [isFormDisabled,setIsFormDisabled] = useState(false);
+    useEffect(() => {
+        if(!selectedNotes?.title?.trim() || !selectedNotes?.notes?.trim()){
+             setIsFormDisabled(false)
+        }else{
+             setIsFormDisabled(true)
+        }
+      
+    }, [selectedNotes])
+    
 
     const handleChange = (e) => {
         let {name , value} = e.target;
@@ -45,7 +55,7 @@ const FormGrid = (props) => {
                                     rows={8}
                                 />
                             </div>
-                            <button onClick={handleSaveNote} className="save-button">
+                            <button disabled={!isFormDisabled} onClick={handleSaveNote} className="save-button">
                                 {selectedNotes?.notesid ? 'Update' : 'Save'} Note
                             </button>
                         </form>

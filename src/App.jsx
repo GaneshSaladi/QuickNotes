@@ -3,11 +3,13 @@ import './App.css'
 import NotesGrid from './Components/NotesGrid';
 import FormGrid from './Components/FormGrid';
 import { v4 as uuidv4 } from 'uuid';
+import Header from './Components/Header';
 
 function App() {
   // state variables
   const [notes, setNotes] = useState([]);
   const allNotes = localStorage.getItem('notes') ? JSON.parse(localStorage.getItem('notes')) : [];
+  const [notesRef,setNotesRef] = useState([]);
   const [selectedNotes, setSelectedNotes] = useState({});
 
   // used to get and update notes while onloading
@@ -15,6 +17,7 @@ function App() {
     const storedNotes = localStorage.getItem('notes');
     if (storedNotes) {
       setNotes(JSON.parse(storedNotes));
+      setNotesRef(JSON.parse(storedNotes));
     }
   }, []);
 
@@ -29,6 +32,7 @@ function App() {
 
       localStorage.setItem('notes', JSON.stringify(updatedNotes));
       setNotes(updatedNotes);
+      setNotesRef(updatedNotes);
     } else {
       let notesEntered = {
         ...selectedNotes, notesid: uuidv4(), createdon: new Date().toLocaleDateString('en-US', {
@@ -40,6 +44,7 @@ function App() {
       const updatedNotes = [...allNotes, notesEntered];
       localStorage.setItem('notes', JSON.stringify(updatedNotes));
       setNotes(updatedNotes);
+      setNotesRef(updatedNotes);
     }
     setSelectedNotes({ title: '', notes: '' });
 
@@ -55,55 +60,25 @@ function App() {
     const updatedNotes = notes.filter(note => note.notesid !== notesData?.notesid);
     localStorage.setItem('notes', JSON.stringify(updatedNotes));
     setNotes(updatedNotes);
+    setNotesRef(updatedNotes);
     setSelectedNotes({ title: '', notes: '' });
+  };
+
+  // function to handle Search
+  const handleSearch =(value)=>{
+    if(!value.trim()){
+      setNotes(notesRef);
+    }else{
+      setNotes(
+      notesRef.filter(note => note.title.toLowerCase().includes(value))
+    );
+    }
   }
 
 
   return (
     <>
-      <header className="header">
-        <div className="container">
-          <div className="header-content">
-            <div className="header-logo">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
-              <h1>QuickNotes</h1>
-            </div>
-            <div className="header-controls">
-              <div className="search-container">
-                <span className="material-icons search-icon">search</span>
-                <input
-                  className="search-input"
-                  placeholder="Search notes..."
-                  type="search"
-                />
-              </div>
-              <div className="sort-container">
-                <select className="sort-select">
-                  <option>Newest</option>
-                  <option>Oldest</option>
-                  <option>Title A-Z</option>
-                </select>
-                <span className="material-icons sort-icon">unfold_more</span>
-              </div>
-              <button className="theme-toggle">
-                <span className="material-icons">wb_sunny</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+     <Header handleSearch={handleSearch}/>
       <main className="main-content container">
         <div className="main-grid">
           <FormGrid handleSaveNote={handleSaveNote} selectedNotes={selectedNotes} setSelectedNotes={setSelectedNotes} />
